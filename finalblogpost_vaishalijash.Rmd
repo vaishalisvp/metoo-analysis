@@ -1,0 +1,191 @@
+---
+title: 'New Media and Networks of Outrage: Locating the Rise of #MeToo on Twitter'
+author: "Subhodeep Jash (s.jash@mpp.hertie-school.org), Vaishali V (v.prasad@mpp.hertie-school.org)"
+date: "May 20, 2018"
+output: html_document
+bibliography: biblio.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+&nbsp;
+&nbsp;
+ 
+##Abstract
+
+The role of online platforms such as Twitter in providing reinvigorated forms of potential mobilization arenas for social movements can be both, understated or exaggerated at times. However, through manifest forms such as Gezi Park, #YoSoy132, Black Lives Matter and now #MeToo we see that they can alter existing social narratives of such movements. Using the salience of the #MeToo movement, this blog post seeks to examine the salience and endurance of this particular movement six months since its origin, focusing on tweets between 4th and 14th May 2018 focusing on certain measurable attributes to weigh its impact.
+
+ 
+###Authorship Note
+The scraping and analysis has been carried out jointly through developer access via our twitter accounts (sjash87 and vaishalisvp). For the blog post, the background and frame of analysis has been written by Vaishali while the Study Limitations and Conclusion has been primarily written by Subhodeep. The analysis section is a joint endeavor of both authors.
+
+ 
+
+_Word count: 1868_
+
+
+```{r include=FALSE}
+library(stringr)
+library(twitteR)
+library(purrr)
+library(tidytext)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(scales)
+library(broom)
+library(ggplot2)
+library(rvest)
+library(XML)
+library(magrittr)
+library(plyr)
+library(ROAuth)
+library(httr)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(stargazer)
+
+verifieddf <- read.csv("verifieddf.csv")
+```
+
+
+&nbsp;
+&nbsp;
+
+##Blog entry
+
+###Background
+ 
+The new tools of social media have reinvented social activism. With platforms such as Facebook and Twitter, the traditional forms of the relation between political authority and popular will have been disrupted with more power now located amid the powerless and a voice to air concerns [@gladwell_2010].Salient manifestations of forms of social activism can be located major social movements such as the Turkish movement around the defense of Gezi Park in June 2013, the Mexican #YoSoy132 movement, the Occupy ("We are the 99%" [@kain_2011])  or the 'Black Lives Matter' movement [@friedersdorf_2018].  
+ 
+Keeping this frame in mind, we seek to examine the #MeToo movement that originates in October 2017 as a backlash to the flurry of allegations relating to sexual harassment and rape that engulfed Hollywood producer, Harvey Weinstein. Women all over the world began to share their personal stories of inappropriate male behavior and the associated power imbalances.
+ 
+The movement essentially, began on social media after a call to action by the actor Alyssa Milano who wrote: "If all the women who have been sexually harassed or assaulted wrote 'Me too' as a status, we might give people a sense of the magnitude of the problem" [@kazmi_2018].
+ 
+The origins of #MeToo can be dated back before the predominance of social media, when activist Tarana Burke created the campaign as a grass-roots movement to reach sexual assault survivors in underprivileged communities [@khomami_2017].
+ 
+###Frame of Analysis
+ 
+The authors in this post attempt to see the endurance of such a social movement that was largely mobilized on social media (primarily, Twitter, Facebook and Instagram) six months after it began in October 2017. 
+
+For this purpose, we used the Twitter API (application programming interface) to pull tweets from verified Twitter users, containing the use of the hashtag #MeToo with its cognate variations for the period between 4th May 2018 and 14th May 2018. The Twitter API only allowed us to pull this subset of available tweets owing to certain access restrictions. However, it still enables us with a frame to look at the intrinsic traits and features of this movement. 
+
+###Unpacking the Hashtag
+ 
+To begin with, let us examine the number of tweets that has taken place over the aforesaid period with the #MeToo hashtag and from verified users. We notice that the tweet volumes are still quite steady for a movement that began out in October 2017. It shows the durability of the movement that went beyond so-called clicktivism to marches, protests and even a repercussion to a recent decision of the Swedish Academy to call off the Nobel Prize in Literature for 2018 in the wake of a sexual assault scandal.
+
+We largely focus on verified users given the networked effect such users or influencers tend to carry on the digital platform. This usually entails: a local network structure, characteristics of adopted neighbors (influencers) and characteristics of potential adopters [@katona]. The density or diffusion of such networks lend to a depth of analysis, albeit recognizing the inherent risks of selection biases. Nonetheless, we believe that it captures the essential features of such a movement adequately. 
+ 
+The average tweet length of the extracted tweets is 141.17 characters, with a minimum of 14 characters and a maximum of 1004 characters. The standard deviation of tweet length is 88.91 characters.
+
+In terms of the nature of tweets over the period, we examined a bit further to look at how many tweets were original vis-à-vis retweets. We find that near about 40% of the tweet volumes comprise of retweets whilst over 60% of the tweets are original posts. This adds to the quality of salience or the gravitas of the movement as it denotes that the stories users share surrounding this problem.  
+
+
+```{r , echo=FALSE}
+verifieddf$rt <- str_count(verifieddf$text, "RT")
+
+ggplot2::ggplot(data=verifieddf, aes(x = factor(rt))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "maroon", width=0.35) + 
+geom_text(aes(y = ((..count..)/sum(..count..)), label = scales::percent((..count..)/sum(..count..))), stat = "count", vjust = -0.25) +
+scale_x_discrete(breaks=c("0","1","2"),labels=c("Original tweets", "Retweets", "Retweets of retweets")) +
+  labs(x="Type of tweets", y="Percentage of total tweets") + ggtitle("Breakdown of total tweets extracted")
+
+```
+
+On the qualitative dimension, which were the top favorited tweets? These are as follows within our time period of analysis:
+
+&nbsp;
+
+ 
+#### Top 5 favorited tweets
+ 
+```{r, echo=FALSE}
+populartweets <- verifieddf %>%
+select(text, favoriteCount) %>% 
+group_by(favoriteCount) %>%
+arrange(desc(favoriteCount)) 
+
+head(populartweets)
+
+```
+
+These tweets emanate out of the recent cause celebre incident to come out to the fore, with the former U.S. Attorney General Eric Schneiderman being accused of violent physical abuse by at least four women.
+ 
+A key attribute of the #MeToo movement is not just how diverse the stories of abuse, harassment and assault have been, but also that they have a common pattern of repetition. The Schneiderman allegations are reported to be eerily similar to the Ghomeshi trial [@redden_2016]  in Canada. In several instances, it is now being noticed that there are men involved who try to exude a faux feminist outlook.
+ 
+The role of influential men in positions of power & a public image that sometimes can mask their true selves are probably what have led to the complicated intricate nature of these allegations surfacing after a certain amount of time has elapsed from the ostensible occurrences of this malaise.
+ 
+We also notice some of these high profile incidents amid the word cloud depicted below.
+
+
+
+###Word cloud analysis of extracted tweets
+
+```{r , echo=FALSE}
+metooCorpus <- Corpus(VectorSource(verifieddf$text))
+
+metooCorpus <- tm_map(metooCorpus, removePunctuation)
+metooCorpus <- tm_map(metooCorpus, removeWords, stopwords('english'))
+
+metooCorpus <- tm_map(metooCorpus, removeWords, c('the', 'this', stopwords('english')))
+
+
+metooCorpus <- tm_map(metooCorpus, stemDocument)
+
+wordcloud(metooCorpus, max.words = 100, random.order = FALSE)
+```
+
+Besides Schneiderman, film director Roman Polanski who's faced criminal charges several decades ago, also feature in the list, owing to a possible strand of injustice arising out of the fact, that the Hollywood film industry hasn't really taken substantial action regarding the issue up until now.
+ 
+The word cloud also contains references to Pulitzer Prize winning journalists such as Ronan Farrow who were recognized for breaking the stories that led to this movement surfacing in public light.
+ 
+The other aspect of salience in this word cloud is "timesup", which is a reference to a prominent tangible solution born from the movement that establishes a legal defense fund with the support of over 200 lawyers volunteering their support in assisting women to share their stories and seek legal redress.
+ 
+We also certain words with special characters or symbols attached to them, that is possibly due to the fact that the original tweets were using a different language script.
+
+&nbsp;
+
+
+###Sentiment analysis of extracted tweets
+
+Using a sample of 1000 tweets , we carried out an AFINN sentiment analysis of the words present in each tweet. The AFINN lexicon classifies words using a numeric score ranging from -5 to 5, with negative scores indicating negative sentiments and positive scores indicating positive sentiments [@afinn]. For instance, words such as "optimistic" and "good" are assigned a score of 2 and 3 respectively, while words such as "terrible" and "bad" are assigned scores of -3 [@afinnmachine]. The advantage of the AFINN lexicon, when compared to other binary classifications such as "bing" and "nrc", is thus the ability to classify words in greater nuance of sentiment, rather than just as "positive" or "negative". The sentiment analysis is presented in the figure below.
+ 
+```{r , echo=FALSE}
+#After downloading the hui.lui.pos and hui.lui.neg, mention below the location of the file
+positive = scan('C:/Users/169435/Dropbox/Hertie School of Governance/Semester 4/Web data collection and social media mining/Final Assignment - Group/positive-words.txt', what='character', comment.char=';')
+negative = scan('C:/Users/169435/Dropbox/Hertie School of Governance/Semester 4/Web data collection and social media mining/Final Assignment - Group/negative-words.txt', what='character', comment.char=';')
+
+
+sentiment_afinn <- read.csv("sentiment_afinn.csv")
+
+ggplot(data=sentiment_afinn, aes(x = factor(score))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "maroon") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), label = scales::percent((..count..)/sum(..count..))), stat = "count", vjust = -0.25) + 
+  scale_y_continuous(labels = percent) + 
+  xlab ("AFINN score (-5: highly negative, 5: highly positive)") + 
+  ylab ("Percentage of total words") + 
+  ggtitle("Sentiment analysis of tweets containing #MeToo (n=1000)")
+
+```
+
+We find that a large chunk of the tweets ranges from a score of -2 to 2 where a negative score (-5 represents a highly negative sentiment) whilst a positive score (+5 represents a highly positive one). We would conjecture that it would be interesting to have observed the change or possible shift in sentiment over time, esp., towards the beginning of the movement. About 28% of the tweets in this sample convey a sentiment score of +2 that reflects a sentiment of being only slightly positive. On the whole, around 56% of the words contained in the sample of tweets contain positive sentiments. These include words such as "courage","excited" and "proud". The words reflecting negative sentiments in the sample include words such as "violence", "hard" and "avoided".
+
+
+###Study Limitations 
+ 
+The requisite developer and app access protocols on the Twitter platform were adhered to, in the course of having necessary permissions in place for scraping data towards this research. Whilst we were constrained in examining the geographic spread of these tweets, we find that subsequent research potential on this subject remains to look at how countries in the Global South embrace such a movement and to possibly look at vernacular variations of the hashtag '#MeToo' depending on the region and context.    
+ 
+###Conclusion
+
+The movement whilst reflective of a certain elitist upper class origin, has now seeped into conversations around diversity in workspaces (such as the technology sector) and even academic spaces (such as universities)- be it the 'Google Memo' [@wong_2017] in the summer of 2017 or a 'List' to name and shame professors in Indian academia that have allegedly committed form(s) of sexual misdemeanors.
+ 
+Conversations around this trend, the barriers that exist and missed opportunities are happening at a time when equity, respect and dismantling privileges are at the forefront of a new social conscience. The #MeToo movement enables activists, allies, community leaders and other relevant stakeholders to unite and reshape the socioeconomic landscape into a more diverse and inclusive form.
+ 
+The power of platforms to mobilize citizens is well established as it is usually decentralized and is of a low transaction cost. However, it must be said that the success of such movements do not purely rest on an online campaign but efforts where both- offline and online mechanisms are in sync and complement each other.
+
+Networked social movements will continue to evolve and shape in different ways, but in its ability to create some form of agency is in itself transformative. However, the true meaning of a social movement, in this case a digital one, can be assessed with the social and historical productivity of its practice and the effect it produces on the participants to it and the society at large [@castells]. In that sense, while it may be too early to evaluate the overall effect of #MeToo but it is safe to say, that the mindsets which it seeks to alter and institutions and power structures that have been challenged already is a sign of a network of outrage turning into one of hope. 
+
+###References
